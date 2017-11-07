@@ -1,6 +1,7 @@
 package lassie
 
 import (
+	"encoding/hex"
 	"fmt"
 	"net/url"
 
@@ -86,6 +87,7 @@ func (c *Client) ApplicationStream(appeui string, handler func(DeviceData)) erro
 		case "Error":
 			return fmt.Errorf(msg.Error)
 		case "DeviceData":
+			msg.Data.Data, _ = hex.DecodeString(msg.Data.HexData)
 			go handler(msg.Data)
 		default:
 			// Ignore it
@@ -97,12 +99,13 @@ func (c *Client) ApplicationStream(appeui string, handler func(DeviceData)) erro
 
 // DeviceData represents data received from a device.
 type DeviceData struct {
-	DeviceEUI      string  `json:"deviceEUI"`
-	DeviceAddress  string  `json:"devAddr"`
-	GatewayEUI     string  `json:"gatewayEUI"`
-	ApplicationEUI string  `json:"appEUI"`
-	Timestamp      int64   `json:"timestamp"`
-	HexData        string  `json:"data"`
+	DeviceEUI      string `json:"deviceEUI"`
+	DeviceAddress  string `json:"devAddr"`
+	GatewayEUI     string `json:"gatewayEUI"`
+	ApplicationEUI string `json:"appEUI"`
+	Timestamp      int64  `json:"timestamp"`
+	HexData        string `json:"data"`
+	Data           []byte
 	Frequency      float32 `json:"frequency"`
 	DataRate       string  `json:"dataRate"`
 	RSSI           int32   `json:"rssi"`
