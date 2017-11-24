@@ -42,7 +42,13 @@ func (c *Client) Address() string {
 }
 
 func (c *Client) ping() error {
-	return c.get("/", nil)
+	err := c.get("/", nil)
+	if err, ok := err.(ClientError); ok && err.HTTPStatusCode == http.StatusForbidden {
+		// A token with restricted access will receive 403 Forbidden from "/"
+		// but that still indicates a succesful connection.
+		return nil
+	}
+	return err
 }
 
 func (c *Client) create(path string, x interface{}) error {
@@ -90,7 +96,8 @@ func (c *Client) request(method, path string, input, output interface{}) error {
 	return nil
 }
 
-// ClientError is the errors returned by the Client.
+// ClientError describes what went wrong with a request that otherwise succeeded
+// but which resulted in an HTTP status code >= 300.
 type ClientError struct {
 	HTTPStatusCode int
 	Message        string
